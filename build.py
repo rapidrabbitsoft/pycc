@@ -14,22 +14,22 @@ def run_command(cmd, check=True):
     """Run a command and return the result."""
     print(f"Running: {cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    
+
     if result.stdout:
         print(result.stdout)
     if result.stderr:
         print(result.stderr, file=sys.stderr)
-    
+
     if check and result.returncode != 0:
         raise subprocess.CalledProcessError(result.returncode, cmd)
-    
+
     return result
 
 
 def clean_build():
     """Clean build artifacts."""
     print("Cleaning build artifacts...")
-    
+
     dirs_to_clean = ["build", "dist", "*.egg-info"]
     for pattern in dirs_to_clean:
         for path in Path(".").glob(pattern):
@@ -50,7 +50,7 @@ def run_tests():
 def run_linting():
     """Run linting checks."""
     print("Running linting checks...")
-    
+
     # Check if tools are available
     tools = ["black", "isort", "flake8", "mypy"]
     for tool in tools:
@@ -84,9 +84,9 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python build.py [clean|test|lint|build|install|all]")
         sys.exit(1)
-    
+
     command = sys.argv[1]
-    
+
     try:
         if command == "clean":
             clean_build()
@@ -106,7 +106,7 @@ def main():
         else:
             print(f"Unknown command: {command}")
             sys.exit(1)
-            
+
     except subprocess.CalledProcessError as e:
         print(f"Command failed: {e}")
         sys.exit(1)
@@ -116,4 +116,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

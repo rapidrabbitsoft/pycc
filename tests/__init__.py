@@ -1,1 +1,1 @@
-# Tests package for pycc 
+"""Tests for pycc package."""

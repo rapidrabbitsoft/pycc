@@ -11,4 +11,4 @@ __email__ = "pycc@rapidrabbit.software"
 
 from .cli import main
 
-__all__ = ["main"] 
+__all__ = ["main"]

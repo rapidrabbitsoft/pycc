@@ -7,80 +7,102 @@ from typing import List
 
 from .core import CheckResult, CheckStatus
 
-
-# Colors for output
-RED = '\033[0;31m'
-GREEN = '\033[0;32m'
-YELLOW = '\033[1;33m'
-BLUE = '\033[0;34m'
-NC = '\033[0m'  # No Color
+# Color constants for terminal output
+RED = "\033[91m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+MAGENTA = "\033[95m"
+CYAN = "\033[96m"
+BOLD = "\033[1m"
+UNDERLINE = "\033[4m"
+RESET = "\033[0m"
 
 
 def print_header(text: str):
     """Print a formatted header."""
-    print(f"\n{YELLOW}=== {text} ==={NC}\n")
+    print(f"\n{BOLD}{CYAN}{'=' * 60}{RESET}")
+    print(f"{BOLD}{CYAN}{text:^60}{RESET}")
+    print(f"{BOLD}{CYAN}{'=' * 60}{RESET}")
 
 
 def print_result(result: CheckResult, verbose: bool = False):
-    """Print a check result."""
+    """Print a single check result."""
     if result.status == CheckStatus.PASSED:
-        print(f"{GREEN}✓ {result.name} passed ({result.duration:.2f}s){NC}")
+        status_color = GREEN
+        status_symbol = "✓"
     elif result.status == CheckStatus.FAILED:
-        print(f"{RED}✗ {result.name} failed ({result.duration:.2f}s){NC}")
-        if verbose and result.error:
-            print(f"  {RED}Error: {result.error}{NC}")
+        status_color = RED
+        status_symbol = "✗"
     elif result.status == CheckStatus.ERROR:
-        print(f"{RED}✗ {result.name} error ({result.duration:.2f}s){NC}")
+        status_color = RED
+        status_symbol = "✗"
+    else:  # SKIPPED
+        status_color = YELLOW
+        status_symbol = "-"
+
+    print(f"{status_color}{status_symbol} {result.name}{RESET}")
+
+    if verbose:
+        if result.output:
+            print(f"  Output: {result.output}")
         if result.error:
-            print(f"  {RED}Error: {result.error}{NC}")
-    elif result.status == CheckStatus.SKIPPED:
-        print(f"{YELLOW}- {result.name} skipped{NC}")
-        if result.error:
-            print(f"  {YELLOW}Reason: {result.error}{NC}")
+            print(f"  Error: {result.error}")
+        if result.duration > 0:
+            print(f"  Duration: {result.duration:.2f}s")
 
 
 def print_summary(results: List[CheckResult], failed_count: int, error_count: int):
     """Print a summary of all results."""
-    print_header("Summary")
-    
     total = len(results)
     passed_count = sum(1 for r in results if r.status == CheckStatus.PASSED)
     skipped_count = sum(1 for r in results if r.status == CheckStatus.SKIPPED)
-    
-    print(f"Total checks: {total}")
-    print(f"{GREEN}Passed: {passed_count}{NC}")
-    print(f"{RED}Failed: {failed_count}{NC}")
-    print(f"{RED}Errors: {error_count}{NC}")
-    print(f"{YELLOW}Skipped: {skipped_count}{NC}")
-    
-    if failed_count == 0 and error_count == 0:
-        print(f"\n{GREEN}All checks passed!{NC}")
+
+    print(f"\n{BOLD}Summary:{RESET}")
+    print(f"  Total checks: {total}")
+    print(f"  {GREEN}Passed: {passed_count}{RESET}")
+    print(f"  {RED}Failed: {failed_count}{RESET}")
+    print(f"  {RED}Errors: {error_count}{RESET}")
+    print(f"  {YELLOW}Skipped: {skipped_count}{RESET}")
+
+    if failed_count > 0 or error_count > 0:
+        print(f"\n{RED}{BOLD}Some checks failed!{RESET}")
+        return False
     else:
-        print(f"\n{RED}{failed_count + error_count} check(s) failed{NC}")
+        print(f"\n{GREEN}{BOLD}All checks passed!{RESET}")
+        return True
 
 
-def print_warning(message: str):
-    """Print a warning message."""
-    print(f"{YELLOW}Warning: {message}{NC}", file=sys.stderr)
+def print_available_checkers():
+    """Print all available checkers."""
+    from .core import registry
+
+    available_checkers = registry.get_available_checkers()
+    all_checkers = registry.get_all_checkers()
+
+    print(f"\n{BOLD}Available Checkers:{RESET}")
+    for name, checker in all_checkers.items():
+        if name in available_checkers:
+            print(f"  {GREEN}✓{RESET} {name}: {checker.description}")
+        else:
+            print(f"  {RED}✗{RESET} {name}: {checker.description} (not available)")
 
 
-def print_error(message: str):
-    """Print an error message."""
-    print(f"{RED}Error: {message}{NC}", file=sys.stderr)
+def print_config_files():
+    """Print configuration files that will be generated."""
+    from .core import registry
+
+    all_checkers = registry.get_all_checkers()
+    config_files = []
+
+    for checker in all_checkers.values():
+        config_files.extend(checker.get_config_files())
+
+    print(f"\n{BOLD}Configuration Files:{RESET}")
+    for config in config_files:
+        print(f"  {BLUE}•{RESET} {config['name']}: {config['description']}")
 
 
-def print_info(message: str):
-    """Print an info message."""
-    print(f"{BLUE}Info: {message}{NC}")
-
-
-def format_duration(seconds: float) -> str:
-    """Format duration in a human-readable way."""
-    if seconds < 1:
-        return f"{seconds*1000:.0f}ms"
-    elif seconds < 60:
-        return f"{seconds:.2f}s"
-    else:
-        minutes = int(seconds // 60)
-        remaining_seconds = seconds % 60
-        return f"{minutes}m {remaining_seconds:.1f}s" 
+def is_color_supported():
+    """Check if the terminal supports color output."""
+    return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
