@@ -23,8 +23,8 @@ class ConfigGenerator:
         # Generate setup.cfg
         self._generate_setup_cfg()
 
-        # Generate requirements-dev.txt
-        self._generate_requirements_dev()
+        # Generate Pipfile
+        self._generate_pipfile()
 
         # Generate tool-specific config files
         self._generate_tool_configs()
@@ -284,23 +284,42 @@ exclude_lines =
 """
         self._write_file("setup.cfg", content)
 
-    def _generate_requirements_dev(self):
-        """Generate requirements-dev.txt file."""
-        content = """# Development dependencies
-black>=22.0.0
-isort>=5.0.0
-flake8>=4.0.0
-pylint>=2.12.0
-mypy>=0.950
-bandit>=1.7.0
-safety>=1.10.0
-pydocstyle>=6.0.0
-vulture>=2.0.0
-radon>=5.0.0
-pytest>=6.0.0
-pytest-cov>=3.0.0
+    def _generate_pipfile(self):
+        """Generate Pipfile for development dependencies."""
+        content = """[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+# Add your main dependencies here
+# example-package = "*"
+
+[dev-packages]
+# Development dependencies for code quality tools
+black = ">=22.0.0"
+isort = ">=5.0.0"
+flake8 = ">=4.0.0"
+pylint = ">=2.12.0"
+mypy = ">=0.950"
+bandit = ">=1.7.0"
+safety = ">=1.10.0"
+pydocstyle = ">=6.0.0"
+vulture = ">=2.0.0"
+radon = ">=5.0.0"
+pytest = ">=6.0.0"
+pytest-cov = ">=3.0.0"
+
+[requires]
+python_version = "3.8"
+
+[scripts]
+test = "pytest tests/ -v"
+lint = "flake8 pycc/ tests/"
+format = "black pycc/ tests/"
+sort-imports = "isort pycc/ tests/"
 """
-        self._write_file("requirements-dev.txt", content)
+        self._write_file("Pipfile", content)
 
     def _generate_tool_configs(self):
         """Generate tool-specific configuration files."""
