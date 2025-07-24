@@ -1,0 +1,179 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pycc"
+version = "0.1.0"
+description = "Python Code Checker - A comprehensive CLI tool for running various Python code quality checks"
+authors = [
+    {name = "RapidRabbit Software", email = "pycc@rapidrabbit.software"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Utilities",
+]
+keywords = ["python", "code-quality", "linting", "formatting", "type-checking", "security", "cli"]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    "flake8>=4.0.0",
+    "pylint>=2.12.0",
+    "mypy>=0.950",
+    "bandit>=1.7.0",
+    "safety>=1.10.0",
+    "pydocstyle>=6.0.0",
+    "vulture>=2.0.0",
+    "radon>=5.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=3.0.0",
+    "coverage>=6.0.0",
+    "pre-commit>=2.20.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/rapidrabbitsoft/pycc"
+Documentation = "https://github.com/rapidrabbitsoft/pycc#readme"
+Repository = "https://github.com/rapidrabbitsoft/pycc.git"
+"Bug Tracker" = "https://github.com/rapidrabbitsoft/pycc/issues"
+
+[project.scripts]
+pycc = "pycc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pycc*"]
+
+[tool.setuptools.package-data]
+pycc = ["py.typed"]
+
+# Black configuration
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \\.eggs
+  | \\.git
+  | \\.hg
+  | \\.mypy_cache
+  | \\.tox
+  | \\.venv
+  | build
+  | dist
+)/
+'''
+
+# isort configuration
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["pycc"]
+
+# Pylint configuration
+[tool.pylint.messages_control]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint.design]
+max-args = 10
+max-attributes = 10
+max-bool-expr = 5
+max-branches = 12
+max-locals = 15
+max-parents = 7
+max-public-methods = 20
+max-returns = 6
+max-statements = 50
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+]
+disallow_untyped_defs = false
+
+# Pydocstyle configuration
+[tool.pydocstyle]
+convention = "google"
+add_select = ["D100", "D104", "D105", "D106", "D107"]
+add_ignore = ["D100", "D104"]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["pycc"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+# Pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+] 
